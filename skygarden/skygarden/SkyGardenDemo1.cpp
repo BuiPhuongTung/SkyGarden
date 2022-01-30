@@ -12,7 +12,6 @@
 #include <process_image.h>
 #include <gl_texture.h>
 #include "pot.h"
-#include "flower.h"
 using namespace std;
 //Kích thước màn hình
 #define WIDTH 1280
@@ -20,15 +19,15 @@ using namespace std;
 //Size của 3 chậu
 int xPot1 = 56, yPot1 = 60;
 int xPot2 = 58, yPot2 = 57;
-int xPot3 = 65, yPot3 = 62;	
+int xPot3 = 65, yPot3 = 62;
 pot pots[12]; // khai báo 12 chậu
-flower flowers[12]; // Khai báo 12 hoa
 // Khai báo tạo độ cho 4 chậu đầu tiên
 //Khai báo các biến vẽ màn hình
 Rect	rct_bg = {0, 1280, 720, 0}, //Màn hình menu
 		rct_bg2 = {0, 1280, 720, 0}, //Màn hình ingame(chính)
 		rct_helpScreen = {0, 1280, 720, 0},  //Bg Màn hình help
 		rct_shopScreen = {0, 1280, 720, 0},  //Bg Màn hình shop
+		rct_bagScreen = {0, 1280, 720, 0},  //Bg Màn hình bag	
 		rct_exit_YN = {292, 705 + 292, 430 + 135, 135};
 //Button
 Rect	rct_btn_newGame={150, 250 + 150, 75 + 475, 475}, //250x75
@@ -37,7 +36,7 @@ Rect	rct_btn_newGame={150, 250 + 150, 75 + 475, 475}, //250x75
 		rct_btn_buy={990, 205 + 990, 75 + 605, 605},
 		rct_btn_exit={880, 250 + 880, 75 + 575, 575}, 
 		rct_btn_back={20, 50 + 20, 75 + 20, 20},
-		//cloud filter
+		 //cloud filter
 		filter_lock1 = {270, 810 + 270, 180, 0},         //Mây lock
 		filter_lock2 = {270, 810 + 270, 180 + 180, 180}, // Mây lock
 		//btn right
@@ -52,11 +51,11 @@ Rect    //icon
 		//icon_avt={400,54+400,35+640,640},
 		//icon_star={400,30+400,29+608,608},
 		//btn mũi tên (Nơi đặt chậu hoa)
-		// Gán vị trí cho 4 mũi tên(Place to plant pots) // trái phải dưới trên
-	    Rct_btn_Arrow ={400,  xPot1 + 400, yPot1 + 450, 450},
-	    Rct_btn_Arrow1={600,  xPot1 + 600, yPot1 + 450, 450},
-	    Rct_btn_Arrow2={800,  xPot1 + 800, yPot1 + 450, 450},
-	    Rct_btn_Arrow3={1000,  xPot1 +1000, yPot1 + 450, 450},
+		// Gán vị trí cho 4 mũi tên(Place to plant pots)
+	    Rct_btn_Arrow ={400 ,xPot1+400,yPot1 + 450,450},
+	    Rct_btn_Arrow1={600 ,xPot1+600,yPot1 + 450,450},
+	    Rct_btn_Arrow2={800 ,xPot1+800,yPot1 + 450,450},
+	    Rct_btn_Arrow3={1000,xPot1+1000,yPot1 + 450,450},
 		//btn mũi tên (Nơi đặt hoa)
 		Rct_btn_Fl,
 		Rct_btn_Fl1,
@@ -89,9 +88,8 @@ Image	img_bg, img_bg2, img_helpScreen, img_exit_YN, img_shopScreen,//bg
 		//Hoa(các giai đoạn- hạt, mầm, hoa)
 		img_seed, img_germ, img_fl1, img_fl2, img_fl3;
 
-
 //Khai báo biến màn hình
-int stt;
+int screen;
 
 //Khai báo hàm
 void init();
@@ -138,7 +136,6 @@ void init() {
   // góc trái trên có tọa độ  là 0,0, góc dưới phải là w,h
   gluOrtho2D(0, WIDTH, HEIGHT, 0);
   glMatrixMode(GL_MODELVIEW);
-
   // Bật chế độ vẽ hình ảnh 2D
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -165,7 +162,7 @@ void init_inGame() {
   Load_Texture_Swap( & img_cloud, "Images/filter-lock.png");
   //Load Mũi tên
   Load_Texture_Swap( & img_arrow, "Images/Arrow.png");
-Load_Texture_Swap( & img_btn_back, "Images/btn-Back.png");
+  Load_Texture_Swap( & img_btn_back, "Images/btn-Back.png");
   //Load Chậu
   Load_Texture_Swap( & img_pot1, "Images/Pot1.png");
   Load_Texture_Swap( & img_pot2, "Images/Pot2.png");
@@ -189,27 +186,7 @@ Load_Texture_Swap( & img_btn_back, "Images/btn-Back.png");
   Load_Texture_Swap( & img_shoVel, "Images/btn-Shovel.png");
   Load_Texture_Swap( & img_water, "Images/btn-Water-Bottle.png");
   // Load ô chứa (thanh gỗ dưới cùng) - container
-	Load_Texture_Swap(&img_container,"Images/Container.png");
-  //Khởi tạo vị trí cho 4 chậu
-  /*for(int i = 0; i < 4; i++)
-  {
-	if(i == 0)
-	{
-		pots[i].x = 400;
-		pots[i].y =	xPot1 + 400;	
-		pots[i].b = yPot1 + 450;
-		pots[i].t = 450;
-	}
-	else
-	{
-		int tempX = pots[0].x + 200;
-		int tempY = pots[0].y + 200;
-		pots[i].x = tempX;
-		pots[i].y =	tempY;	
-		pots[i].b = pots[0].b;
-		pots[i].t = pots[0].t;
-	}
-  }*/
+  Load_Texture_Swap(&img_container,"Images/Container.png");
 }
 //hàm khởi động game
 void init_menu() {
@@ -261,27 +238,28 @@ void btn_screenNewGame() {
 }
 //màn hình newgame
 void screenNewGame() {
-glutSetWindowTitle("SKY GRADEN");
+  glutSetWindowTitle("SKY GRADEN");
   glClear(GL_COLOR_BUFFER_BIT);
   glLoadIdentity();
   //__Start__
-  stt = 0;
-  Map_Texture( & img_bg2);
-  Draw_Rect( & rct_bg2);
+  screen = 0;  
+  //load bg
+  Map_Texture( & img_bg2);  
+  Draw_Rect( & rct_bg2);	
   // Load mây lock
   Map_Texture( & img_cloud);
   Draw_Rect( & filter_lock1);
   Draw_Rect( & filter_lock2);
-  //back
-  btnBack();
-  //load btn
-  btn_screenNewGame();
   // mũi tên
   Map_Texture(&img_arrow);
   Draw_Rect(&Rct_btn_Arrow);
   Draw_Rect(&Rct_btn_Arrow1);
   Draw_Rect(&Rct_btn_Arrow2);
   Draw_Rect(&Rct_btn_Arrow3);
+  //back
+  btnBack();
+  //load btn
+  btn_screenNewGame();
   //back to display
   glutMouseFunc(clickBack);
   //__End__
@@ -329,8 +307,11 @@ void screenShop(){
   glClear(GL_COLOR_BUFFER_BIT);
   glLoadIdentity();
   //__Start__
+  screen = 1;
   Map_Texture( & img_shopScreen);
   Draw_Rect( & rct_shopScreen);
+  //back
+  glutMouseFunc(clickBack);
   //__End__
   glutSwapBuffers();
 }
@@ -368,9 +349,20 @@ void clickExit(int button, int state, int x, int y) {
 }
 void clickBack(int button, int state, int x, int y) {
   //back về display
-  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x >= 20 && x <= 70 && y >= 20 && y <= 95) {
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x >= 20 && x <= 70 && y >= 20 && y <= 95 && screen == 0) {
     cout << "Back to display\n";
     glutDisplayFunc(display);
   }
+  //back về screen Newgame
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x >= 20 && x <= 70 && y >= 20 && y <= 95 && screen == 1) {
+    cout << "Back to NewGame\n";
+    glutDisplayFunc(screenNewGame);
+  }
+  //go to shop
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x >= 1170 && x <= 81 + 1170 && y >= 100 && y <= 76 + 100 && screen == 0) {
+    cout << "Qua Shop thanh cong\n";
+    glutDisplayFunc(screenShop);
+  }
+
   glutPostRedisplay();
 }
